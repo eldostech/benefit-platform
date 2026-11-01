@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner %}
+{% block title %}{{ error.code }}{% endblock %}
+{% block main %}
+<h1>{{ "Not found" if error.status == 404 else "That could not be done" }}</h1>
+{{ error_banner(error) }}
+<p><a href="/plans" data-testid="back-to-plans">Back to plans</a></p>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_forms.html" import address %}
+{% block title %}{{ change.change_id }}{% endblock %}
+{% block main %}
+{% if change.plan_id %}
+  {% set record_url = "/plans/" ~ change.plan_id %}{% set record = change.plan_id %}{% set back = "Back to the plan" %}
+{% else %}
+  {% set record_url = "/customers/" ~ change.customer_number %}{% set record = "customer " ~ change.customer_number %}{% set back = "Back to the customer" %}
+{% endif %}
+<div class="crumbs">{% if change.plan_id %}<a href="/plans">Plans</a>{% else %}<a href="/customers">Customers</a>{% endif %} / <a href="{{ record_url }}">{{ change.plan_id or change.customer_number }}</a> / {{ change.change_id }}</div>
+{% if saved %}
+<div class="banner ok" role="status" data-testid="saved-banner">Saved. The change is in effect.</div>
+{% endif %}
+<h1>Change <span class="confirmation" data-testid="confirmation-number">{{ change.change_id }}</span></h1>
+<p class="sub"><span data-testid="change-operation">{{ change.operation.replace("_", " ") }}</span> on <a href="{{ record_url }}" data-testid="change-record">{{ record }}</a> · {{ change.created_at[:19].replace("T", " ") }}</p>
+
+<section class="panel">
+  <h2>What changed</h2>
+  <div class="table-wrap">
+  <table data-testid="change-diff">
+    <thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+    {% if change.operation == "update_customer_address" %}
+      <tr><td>Mailing address</td><td data-testid="before-address">{{ address(change.before.address) }}</td><td data-testid="after-address">{{ address(change.after.address) }}</td></tr>
+      <tr><td>Plans mailed to it</td><td colspan="2" data-testid="address-plans">{% for p in change.after.plans %}{{ p.plan_id }}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>
+    {% elif change.operation in ("add_coverage", "terminate_coverage") and change.coverage %}
+      {% set c = change.coverage %}
+      <tr><td>Coverage</td><td>{{ (change.previous or {}).get("coverage", {}).get("status", "—") }}</td><td data-testid="after-coverage">{{ c.coverage_id }} · {{ c.coverage_code }} · {{ c.status }}{% if c.termination_date %} from {{ c.termination_date }}{% endif %}</td></tr>
+    {% else %}
+      {% for field in change.changed %}
+      <tr><td>{{ field.replace("_", " ") }}</td><td>{{ change.before.get(field) }}</td><td data-testid="after-{{ field }}">{{ change.after.get(field) }}</td></tr>
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+  </div>
+  <p><a class="btn secondary" href="{{ record_url }}" data-testid="back-to-record">{{ back }}</a></p>
+</section>
+{% endblock %}

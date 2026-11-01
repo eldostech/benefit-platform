@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner, input, select, hidden, address %}
+{% block title %}Change address · {{ customer.customer_number }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/customers">Customers</a> / <a href="/customers/{{ customer.customer_number }}">{{ customer.customer_number }}</a> / Address</div>
+<h1>Change mailing address</h1>
+<p class="sub">{{ customer.legal_name }} ({{ customer.customer_number }}) · now <span data-testid="current-address">{{ address(customer.address) }}</span></p>
+<p class="muted" data-testid="address-applies-to">Applies to every plan the customer holds on {{ platform.name }}:
+  {% for p in customer.plans %}{{ p.plan_id }} ({{ p.product_line }}){% if not loop.last %}, {% endif %}{% endfor %}.</p>
+
+<section class="panel">
+  {{ error_banner(error) }}
+  <form method="post" action="/customers/{{ customer.customer_number }}/address" class="stack" data-testid="address-form" novalidate>
+    {{ hidden(form_id, customer.version) }}
+    {{ input("line1", "Street address", values.line1, fields, required=True,
+             hint="No PO Boxes: plan documents cannot be delivered to one." if platform.refuses_po_box else "") }}
+    {{ input("line2", "Suite, floor or unit", values.line2, fields) }}
+    {{ input("city", "City", values.city, fields, required=True) }}
+    {{ select("state", "State", values.state, states, fields, blank="Choose a state") }}
+    {{ input("postal_code", "ZIP code", values.postal_code, fields, required=True, hint="Five digits, or ZIP+4 (43215-1234)", attrs='inputmode="numeric"') }}
+    <div class="actions">
+      <button type="submit" class="btn" data-testid="save">Save address</button>
+      <a class="btn secondary" href="/customers/{{ customer.customer_number }}" data-testid="cancel">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

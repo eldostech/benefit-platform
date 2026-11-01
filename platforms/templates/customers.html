@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_forms.html" import status, address %}
+{% block title %}Customers{% endblock %}
+{% block main %}
+<h1>Customers</h1>
+<p class="sub">Every customer with business on {{ platform.name }}.</p>
+
+<section class="panel">
+  <form method="get" action="/customers" class="inline" role="search" data-testid="customer-search">
+    <div class="field">
+      <label for="q">Customer number or name</label>
+      <input id="q" name="q" value="{{ q }}" data-testid="input-q" size="28">
+    </div>
+    <button type="submit" class="btn" data-testid="search">Search</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2 data-testid="result-count">{{ results.total }} customer{{ "" if results.total == 1 else "s" }}</h2>
+  {% if results["items"] %}
+  <div class="table-wrap">
+  <table data-testid="customers-table">
+    <thead><tr><th>Customer number</th><th>Legal name</th><th>Mailing address</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for c in results["items"] %}
+      <tr data-testid="customer-row-{{ c.customer_number }}">
+        <td><a href="/customers/{{ c.customer_number }}" data-testid="open-customer-{{ c.customer_number }}">{{ c.customer_number }}</a></td>
+        <td>{{ c.legal_name }}</td>
+        <td data-testid="customer-address-{{ c.customer_number }}">{{ address(c.address) }}</td>
+        <td>{{ status(c.status) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted" data-testid="no-results">No customers match.</p>
+  {% endif %}
+</section>
+{% endblock %}

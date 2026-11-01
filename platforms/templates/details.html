@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner, input, select, hidden %}
+{% block title %}Change details · {{ plan.plan_id }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/plans">Plans</a> / <a href="/plans/{{ plan.plan_id }}">{{ plan.plan_id }}</a> / Details</div>
+<h1>Change plan details</h1>
+<p class="sub">{{ plan.plan_id }} · {{ plan.customer_name }} · {{ plan.product_line }}. Only the fields you change are sent.</p>
+
+<section class="panel">
+  {{ error_banner(error) }}
+  <form method="post" action="/plans/{{ plan.plan_id }}/details" class="stack" data-testid="details-form" novalidate>
+    {{ hidden(form_id, plan.version) }}
+    {{ input("plan_name", "Plan name", values.plan_name, fields) }}
+    {{ input("renewal_date", "Renewal date", values.renewal_date, fields, type="date", hint="After the effective date, " ~ plan.effective_date) }}
+    {{ select("billing_frequency", "Billing frequency", values.billing_frequency, frequencies, fields) }}
+    {{ input("employee_contribution_pct", "Employee contribution (%)", values.employee_contribution_pct, fields, type="number", hint="0 to 100", attrs='step="0.01" min="0" max="100"') }}
+    {{ select("contribution_basis", "Contribution basis", values.contribution_basis, bases, fields) }}
+    <div class="actions">
+      <button type="submit" class="btn" data-testid="save">Save details</button>
+      <a class="btn secondary" href="/plans/{{ plan.plan_id }}" data-testid="cancel">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

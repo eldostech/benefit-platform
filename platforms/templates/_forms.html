@@ -1,0 +1,43 @@
+{% macro error_banner(error) %}
+{% if error %}
+<div class="banner error" role="alert" data-testid="error-banner" data-error-code="{{ error.code }}">
+  <strong>{{ error.message }}</strong>
+  <div><code>{{ error.code }}</code></div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro input(name, label, value, fields, type="text", hint="", required=False, attrs="") %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value or '' }}" data-testid="input-{{ name }}"
+    {% if required %}required{% endif %} {% if name in fields %}aria-invalid="true" aria-describedby="{{ name }}-problem"{% endif %} {{ attrs|safe }}>
+  {% if hint %}<span class="hint">{{ hint }}</span>{% endif %}
+  {% if name in fields %}<span class="problem" id="{{ name }}-problem" data-testid="problem-{{ name }}">{{ fields[name] }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro select(name, label, value, options, fields, blank="", hint="") %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}</label>
+  <select id="{{ name }}" name="{{ name }}" data-testid="select-{{ name }}" {% if name in fields %}aria-invalid="true" aria-describedby="{{ name }}-problem"{% endif %}>
+    {% if blank %}<option value="">{{ blank }}</option>{% endif %}
+    {% for option in options %}
+    {% set v = option[0] if option is not string else option %}
+    {% set text = option[1] if option is not string else option %}
+    <option value="{{ v }}" {% if v|string == value|string %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if hint %}<span class="hint">{{ hint }}</span>{% endif %}
+  {% if name in fields %}<span class="problem" id="{{ name }}-problem" data-testid="problem-{{ name }}">{{ fields[name] }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro hidden(form_id, version) %}
+<input type="hidden" name="form_id" value="{{ form_id }}">
+<input type="hidden" name="version" value="{{ version }}">
+{% endmacro %}
+
+{% macro status(value) %}<span class="badge {{ value }}" data-testid="status">{{ value }}</span>{% endmacro %}
+
+{% macro address(a) %}{{ a.line1 }}{% if a.line2 %}, {{ a.line2 }}{% endif %}, {{ a.city }}, {{ a.state }} {{ a.postal_code }}{% endmacro %}

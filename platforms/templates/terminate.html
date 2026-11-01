@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner, input, hidden %}
+{% block title %}Terminate {{ coverage.coverage_id }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/plans">Plans</a> / <a href="/plans/{{ plan.plan_id }}">{{ plan.plan_id }}</a> / Terminate {{ coverage.coverage_id }}</div>
+<h1>Terminate a coverage</h1>
+<p class="sub">{{ coverage.coverage_id }} · {{ coverage.coverage_name }} ({{ coverage.employee_class }}) · effective {{ coverage.effective_date }}</p>
+
+<section class="panel">
+  {{ error_banner(error) }}
+  {% if coverage.status == "terminated" %}
+  <div class="banner note" role="status" data-testid="already-terminated">This coverage was terminated effective {{ coverage.termination_date }}.</div>
+  {% else %}
+  <h2>Step 1 of 2 · When and why</h2>
+  <form method="post" action="/plans/{{ plan.plan_id }}/coverages/{{ coverage.coverage_id }}/terminate" class="stack" data-testid="terminate-form" novalidate>
+    {{ hidden(form_id, plan.version) }}
+    <input type="hidden" name="step" value="review">
+    {{ input("termination_date", "Termination date", values.termination_date, fields, type="date", required=True, hint="On or after " ~ coverage.effective_date) }}
+    {{ input("reason", "Reason", values.reason, fields, required=True, hint="3 to 200 characters, e.g. Employer request") }}
+    <div class="actions">
+      <button type="submit" class="btn danger" data-testid="review">Review termination</button>
+      <a class="btn secondary" href="/plans/{{ plan.plan_id }}" data-testid="cancel">Cancel</a>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

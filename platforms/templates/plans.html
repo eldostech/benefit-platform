@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_forms.html" import status %}
+{% block title %}Plans{% endblock %}
+{% block main %}
+<h1>Plans</h1>
+<p class="sub">Search {{ platform.name }} by customer number or name.</p>
+
+<section class="panel">
+  <form method="get" action="/plans" class="inline" role="search" data-testid="plan-search">
+    <div class="field">
+      <label for="q">Customer number or name</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="00104217 or Harbor Point" data-testid="input-q" size="28">
+    </div>
+    <div class="field">
+      <label for="product_line">Product line</label>
+      <select id="product_line" name="product_line" data-testid="select-product_line">
+        <option value="">All</option>
+        {% for line in platform.product_lines %}<option value="{{ line }}" {% if line == product_line %}selected{% endif %}>{{ line }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status" data-testid="select-status">
+        <option value="">Any</option>
+        {% for s in ("active", "terminated") %}<option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn" data-testid="search">Search</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2 data-testid="result-count">{{ results.total }} plan{{ "" if results.total == 1 else "s" }}</h2>
+  {% if results["items"] %}
+  <div class="table-wrap">
+  <table data-testid="plans-table">
+    <thead><tr><th>Plan</th><th>Customer</th><th>Line</th><th>Plan name</th><th>Status</th><th>Effective</th><th>Active coverages</th></tr></thead>
+    <tbody>
+    {% for p in results["items"] %}
+      <tr data-testid="plan-row-{{ p.plan_id }}">
+        <td><a href="/plans/{{ p.plan_id }}" data-testid="open-plan-{{ p.plan_id }}">{{ p.plan_id }}</a></td>
+        <td><a href="/customers/{{ p.customer_number }}">{{ p.customer_number }}</a><br><span class="muted">{{ p.customer_name }}</span></td>
+        <td>{{ p.product_line }}</td>
+        <td>{{ p.plan_name }}</td>
+        <td>{{ status(p.status) }}</td>
+        <td>{{ p.effective_date }}</td>
+        <td>{{ p.active_coverages }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if pages > 1 %}
+  <div class="pager">
+    {% if page > 1 %}<a href="/plans?{{ filters }}&page={{ page - 1 }}" data-testid="previous-page">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a href="/plans?{{ filters }}&page={{ page + 1 }}" data-testid="next-page">Next</a>{% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <p class="muted" data-testid="no-results">No plans match.</p>
+  {% endif %}
+</section>
+{% endblock %}

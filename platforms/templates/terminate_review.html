@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner, hidden %}
+{% block title %}Confirm termination · {{ coverage.coverage_id }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/plans">Plans</a> / <a href="/plans/{{ plan.plan_id }}">{{ plan.plan_id }}</a> / Terminate {{ coverage.coverage_id }}</div>
+<h1>Confirm termination</h1>
+<p class="sub">Step 2 of 2. Nothing has changed yet.</p>
+
+<section class="panel">
+  {{ error_banner(error) }}
+  <div class="banner error" role="status" data-testid="termination-warning">A terminated coverage cannot be reinstated here.</div>
+  <dl class="facts" data-testid="termination-summary">
+    <dt>Plan</dt><dd>{{ plan.plan_id }} · {{ plan.customer_name }}</dd>
+    <dt>Coverage</dt><dd>{{ coverage.coverage_id }} · {{ coverage.coverage_name }} ({{ coverage.employee_class }})</dd>
+    <dt>Ends on</dt><dd data-testid="review-termination_date">{{ values.termination_date }}</dd>
+    <dt>Reason</dt><dd data-testid="review-reason">{{ values.reason }}</dd>
+  </dl>
+  <form method="post" action="/plans/{{ plan.plan_id }}/coverages/{{ coverage.coverage_id }}/terminate" style="margin-top:16px" data-testid="confirm-form">
+    {{ hidden(form_id, plan.version) }}
+    <input type="hidden" name="step" value="confirm">
+    <input type="hidden" name="termination_date" value="{{ values.termination_date }}">
+    <input type="hidden" name="reason" value="{{ values.reason }}">
+    <div class="actions">
+      <button type="submit" class="btn danger" data-testid="confirm">Confirm termination</button>
+      <a class="btn secondary" href="/plans/{{ plan.plan_id }}/coverages/{{ coverage.coverage_id }}/terminate" data-testid="back">Back</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

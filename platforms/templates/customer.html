@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_forms.html" import status, address %}
+{% block title %}{{ customer.legal_name }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/customers">Customers</a> / {{ customer.customer_number }}</div>
+<h1 data-testid="customer-name">{{ customer.legal_name }}</h1>
+<p class="sub">Customer <span data-testid="customer-number">{{ customer.customer_number }}</span> · {{ status(customer.status) }} · version <span data-testid="customer-version">{{ customer.version }}</span></p>
+
+{% if notice == "unchanged" %}
+<div class="banner note" role="status" data-testid="notice-unchanged">Nothing was changed: the customer already holds that address.</div>
+{% endif %}
+
+<section class="panel">
+  <h2>Mailing address</h2>
+  <p data-testid="customer-address">{{ address(customer.address) }}</p>
+  <p class="muted">The one address for every plan this customer holds on {{ platform.name }}.</p>
+  {% if customer.status == "active" %}<a class="btn secondary" href="/customers/{{ customer.customer_number }}/address" data-testid="edit-address">Change address</a>{% endif %}
+</section>
+
+<section class="panel">
+  <h2>Plans on {{ platform.name }}</h2>
+  <div class="table-wrap">
+  <table data-testid="customer-plans-table">
+    <thead><tr><th>Plan</th><th>Line</th><th>Plan name</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in customer.plans %}
+      <tr data-testid="plan-row-{{ p.plan_id }}">
+        <td><a href="/plans/{{ p.plan_id }}" data-testid="open-plan-{{ p.plan_id }}">{{ p.plan_id }}</a></td>
+        <td>{{ p.product_line }}</td>
+        <td>{{ p.plan_name }}</td>
+        <td>{{ status(p.status) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Change history</h2>
+  {% if changes %}
+  <div class="table-wrap">
+  <table data-testid="changes-table">
+    <thead><tr><th>Confirmation</th><th>Change</th><th>What changed</th><th>When</th></tr></thead>
+    <tbody>
+    {% for ch in changes %}
+      <tr data-testid="change-row-{{ ch.change_id }}">
+        <td><a href="/changes/{{ ch.change_id }}">{{ ch.change_id }}</a></td>
+        <td>{{ ch.operation.replace("_", " ") }}</td>
+        <td>{{ ch.changed|join(", ") }}</td>
+        <td>{{ ch.created_at[:19].replace("T", " ") }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No changes to the customer record yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

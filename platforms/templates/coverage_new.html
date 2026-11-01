@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_forms.html" import error_banner, input, select, hidden %}
+{% block title %}Add coverage · {{ plan.plan_id }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/plans">Plans</a> / <a href="/plans/{{ plan.plan_id }}">{{ plan.plan_id }}</a> / Add coverage</div>
+<h1>Add coverage</h1>
+<p class="sub">{{ plan.plan_id }} · {{ plan.customer_name }} · a {{ plan.product_line }} plan, so only {{ plan.product_line }} coverages can be added.</p>
+
+<section class="panel">
+  {{ error_banner(error) }}
+  {% if not option %}
+  <h2>Step 1 of 2 · Choose the coverage</h2>
+  <form method="get" action="/plans/{{ plan.plan_id }}/coverages/new" class="stack" data-testid="coverage-choose-form">
+    {{ select("coverage_code", "Coverage", values.coverage_code, choices, fields, blank="Choose a coverage") }}
+    <div class="actions">
+      <button type="submit" class="btn" data-testid="continue">Continue</button>
+      <a class="btn secondary" href="/plans/{{ plan.plan_id }}" data-testid="cancel">Cancel</a>
+    </div>
+  </form>
+  {% else %}
+  <h2>Step 2 of 2 · {{ option.name }} (<span data-testid="chosen-coverage">{{ option.code }}</span>)</h2>
+  <form method="post" action="/plans/{{ plan.plan_id }}/coverages/new" class="stack" data-testid="coverage-form" novalidate>
+    {{ hidden(form_id, plan.version) }}
+    <input type="hidden" name="coverage_code" value="{{ option.code }}">
+    {{ select("employee_class", "Employee class", values.employee_class, classes, fields) }}
+    {{ input("effective_date", "Effective date", values.effective_date, fields, type="date", required=True, hint="On or after the plan's effective date, " ~ plan.effective_date) }}
+    {% for name, (kind, allowed) in option.terms.items() %}
+      {% set key = "term_" ~ name %}
+      {% set problem_fields = {key: fields["terms." ~ name]} if ("terms." ~ name) in fields else {} %}
+      {% set label = name.replace("_", " ")|capitalize %}
+      {% if kind == "choice" %}
+        {{ select(key, label, values.get(key, ""), allowed|map("string")|list, problem_fields, blank="Choose") }}
+      {% else %}
+        {{ input(key, label, values.get(key, ""), problem_fields, type="number", required=True,
+                 hint=allowed[0] ~ " to " ~ allowed[1], attrs='min="' ~ allowed[0] ~ '" max="' ~ allowed[1] ~ '" step="any"') }}
+      {% endif %}
+    {% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn" data-testid="save">Add coverage</button>
+      <a class="btn secondary" href="/plans/{{ plan.plan_id }}/coverages/new" data-testid="back">Choose another</a>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %} · {{ platform.web_title }}</title>
+<style>
+  :root {
+    --accent: {{ platform.web_accent }};
+    --ink: #1c2430;
+    --muted: #5b6676;
+    --line: #d9dee5;
+    --panel: #ffffff;
+    --page: #f3f5f8;
+    --bad: #b42318;
+    --bad-bg: #fef3f2;
+    --good: #067647;
+    --good-bg: #ecfdf3;
+    --note-bg: #eff4ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--page); }
+  a { color: var(--accent); }
+  header.top { background: var(--accent); color: #fff; }
+  header.top .bar { max-width: 1120px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; gap: 24px; min-height: 52px; flex-wrap: wrap; }
+  header.top .brand { font-weight: 650; letter-spacing: .01em; }
+  header.top nav { display: flex; gap: 4px; flex: 1; }
+  header.top nav a { color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 6px; opacity: .85; }
+  header.top nav a[aria-current="page"], header.top nav a:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.top .who { font-size: 13px; opacity: .85; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .crumbs { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+  dl.facts dt { color: var(--muted); }
+  dl.facts dd { margin: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; background: #f8f9fb; }
+  .table-wrap { overflow-x: auto; }
+  .badge { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .badge.active { color: var(--good); background: var(--good-bg); border-color: #abefc6; }
+  .badge.terminated { color: var(--muted); background: #f2f4f7; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { display: inline-block; font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; text-decoration: none; cursor: pointer; }
+  .btn.secondary { background: #fff; color: var(--accent); }
+  .btn.danger { background: var(--bad); border-color: var(--bad); }
+  form.stack { display: grid; gap: 14px; max-width: 560px; }
+  form.inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  .field { display: grid; gap: 4px; }
+  .field label { font-weight: 600; font-size: 14px; }
+  .field .hint { color: var(--muted); font-size: 13px; }
+  input, select { font: inherit; padding: 7px 9px; border: 1px solid #b8c0cc; border-radius: 6px; background: #fff; min-width: 0; }
+  input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--bad); background: var(--bad-bg); }
+  .field .problem { color: var(--bad); font-size: 13px; }
+  .banner { padding: 12px 14px; border-radius: 6px; margin-bottom: 16px; border: 1px solid; }
+  .banner.error { color: var(--bad); background: var(--bad-bg); border-color: #fecdca; }
+  .banner.ok { color: var(--good); background: var(--good-bg); border-color: #abefc6; }
+  .banner.note { background: var(--note-bg); border-color: #c7d7fe; }
+  .banner code { font-size: 12px; }
+  .confirmation { font-size: 20px; font-weight: 650; font-family: ui-monospace, Consolas, monospace; }
+  .muted { color: var(--muted); }
+  .pager { display: flex; gap: 12px; align-items: center; margin-top: 12px; font-size: 14px; }
+  @media (max-width: 640px) { dl.facts { grid-template-columns: 1fr; } dl.facts dt { margin-top: 6px; } }
+</style>
+</head>
+<body data-platform="{{ platform.code }}">
+<header class="top">
+  <div class="bar">
+    <span class="brand" data-testid="brand">{{ platform.web_title }}</span>
+    <nav aria-label="Main">
+      <a href="/plans" data-testid="nav-plans" {% if path.startswith('/plans') or path.startswith('/changes') %}aria-current="page"{% endif %}>Plans</a>
+      <a href="/customers" data-testid="nav-customers" {% if path.startswith('/customers') %}aria-current="page"{% endif %}>Customers</a>
+    </nav>
+    <span class="who">Test environment · no sign-in</span>
+  </div>
+</header>
+<main>
+{% block main %}{% endblock %}
+</main>
+</body>
+</html>

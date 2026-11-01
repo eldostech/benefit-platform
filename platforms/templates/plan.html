@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% from "_forms.html" import status, address %}
+{% block title %}{{ plan.plan_id }}{% endblock %}
+{% block main %}
+<div class="crumbs"><a href="/plans">Plans</a> / <a href="/customers/{{ plan.customer_number }}">{{ plan.customer_name }}</a> / {{ plan.plan_id }}</div>
+<h1><span data-testid="plan-id">{{ plan.plan_id }}</span> · {{ plan.plan_name }}</h1>
+<p class="sub">{{ plan.customer_name }} (<span data-testid="customer-number">{{ plan.customer_number }}</span>) · {{ plan.product_line }} · {{ status(plan.status) }} · version <span data-testid="plan-version">{{ plan.version }}</span></p>
+
+{% if notice == "unchanged" %}
+<div class="banner note" role="status" data-testid="notice-unchanged">Nothing was changed: the plan already holds those values.</div>
+{% endif %}
+{% if plan.status == "terminated" %}
+<div class="banner note" role="status" data-testid="notice-terminated">This plan was terminated effective {{ plan.termination_date }}. It takes no changes.</div>
+{% endif %}
+
+<div class="grid">
+  <section class="panel">
+    <h2>Mailing address</h2>
+    <p data-testid="customer-address">{{ address(customer.address) }}</p>
+    <p class="muted">The customer's address, shared by all its plans on {{ platform.name }}.</p>
+    <a class="btn secondary" href="/customers/{{ customer.customer_number }}" data-testid="open-customer">Change it on the customer</a>
+  </section>
+  <section class="panel">
+    <h2>Plan details</h2>
+    <dl class="facts" data-testid="plan-details">
+      <dt>Effective</dt><dd data-testid="field-effective_date">{{ plan.effective_date }}</dd>
+      <dt>Renewal</dt><dd data-testid="field-renewal_date">{{ plan.renewal_date or "—" }}</dd>
+      <dt>Billing</dt><dd data-testid="field-billing_frequency">{{ plan.billing_frequency }}</dd>
+      <dt>Employee contribution</dt><dd data-testid="field-employee_contribution_pct">{{ plan.employee_contribution_pct }}%</dd>
+      <dt>Contribution basis</dt><dd data-testid="field-contribution_basis">{{ plan.contribution_basis }}</dd>
+    </dl>
+    {% if plan.status != "terminated" %}<p><a class="btn secondary" href="/plans/{{ plan.plan_id }}/details" data-testid="edit-details">Change details</a></p>{% endif %}
+  </section>
+</div>
+
+<section class="panel">
+  <div class="actions" style="justify-content: space-between; align-items: center;">
+    <h2 style="margin:0">Coverages</h2>
+    {% if plan.status != "terminated" %}<a class="btn" href="/plans/{{ plan.plan_id }}/coverages/new" data-testid="add-coverage">Add coverage</a>{% endif %}
+  </div>
+  <div class="table-wrap" style="margin-top:12px">
+  <table data-testid="coverages-table">
+    <thead><tr><th>Coverage</th><th>Code</th><th>Class</th><th>Status</th><th>Effective</th><th>Ends</th><th>Terms</th><th></th></tr></thead>
+    <tbody>
+    {% for c in plan.coverages %}
+      <tr data-testid="coverage-row-{{ c.coverage_id }}" data-status="{{ c.status }}">
+        <td>{{ c.coverage_id }}<br><span class="muted">{{ c.coverage_name }}</span></td>
+        <td>{{ c.coverage_code }}</td>
+        <td>{{ c.employee_class }}</td>
+        <td>{{ status(c.status) }}</td>
+        <td>{{ c.effective_date }}</td>
+        <td>{{ c.termination_date or "—" }}{% if c.termination_reason %}<br><span class="muted">{{ c.termination_reason }}</span>{% endif %}</td>
+        <td>{% for k, v in c.terms.items() %}{{ k }}: {{ v }}{% if not loop.last %}<br>{% endif %}{% endfor %}</td>
+        <td>{% if c.status == "active" and plan.status != "terminated" %}<a href="/plans/{{ plan.plan_id }}/coverages/{{ c.coverage_id }}/terminate" data-testid="terminate-{{ c.coverage_id }}">Terminate</a>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="muted">No coverages.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Change history</h2>
+  {% if changes %}
+  <div class="table-wrap">
+  <table data-testid="changes-table">
+    <thead><tr><th>Confirmation</th><th>Change</th><th>What changed</th><th>When</th></tr></thead>
+    <tbody>
+    {% for ch in changes %}
+      <tr data-testid="change-row-{{ ch.change_id }}">
+        <td><a href="/changes/{{ ch.change_id }}">{{ ch.change_id }}</a></td>
+        <td>{{ ch.operation.replace("_", " ") }}</td>
+        <td>{{ ch.changed|join(", ") }}</td>
+        <td>{{ ch.created_at[:19].replace("T", " ") }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No changes yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
