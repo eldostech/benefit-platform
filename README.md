@@ -45,6 +45,31 @@ app, the Workbench folder's `.claude/launch.json` has an entry for each
 and a generated development key for each API. It is git-ignored. To set it up
 on another machine, copy `.env.example`.
 
+### The API keys
+
+Each REST API accepts exactly the key in its `.env` setting (in the
+`X-API-Key` header, or as a Bearer token), and its MCP server reads the same
+value to call it. They are made with Python's `secrets` module: a short label
+saying which key it is, then 24 random bytes as 32 URL-safe characters --
+39 characters in all.
+
+| Setting | Label |
+|---|---|
+| `PLATFORM_A_API_KEY` | `pa_dev_` |
+| `PLATFORM_B_API_KEY` | `pb_dev_` |
+| `PLAN_DIRECTORY_API_KEY` | `pd_dev_` |
+
+```bash
+python -c "import secrets; print('pa_dev_' + secrets.token_urlsafe(24))"   # PLATFORM_A_API_KEY
+python -c "import secrets; print('pb_dev_' + secrets.token_urlsafe(24))"   # PLATFORM_B_API_KEY
+python -c "import secrets; print('pd_dev_' + secrets.token_urlsafe(24))"   # PLAN_DIRECTORY_API_KEY
+```
+
+The label is only for people: nothing checks it, and any long random value
+works. Make new keys on each machine rather than copying them, and never
+commit them. Changing a key means restarting `run.py serve`, so the API and
+its MCP server read the new one together.
+
 ```bash
 .venv/Scripts/python -m pytest             # 92 tests, on platform_a_test / platform_b_test, never your data
 ```
